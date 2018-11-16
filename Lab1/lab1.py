@@ -8,6 +8,10 @@ def imshow(image):
     plt.imshow(imagergb)
     plt.show()
 
+'''
+
+#PART1
+
 #Q0
 #Importing image from file
 img1 = cv2.imread('lena.png')
@@ -34,4 +38,36 @@ for y in range(len(img4)):
         img4[y][x][0]=x #setting the blue
         img4[y][x][1]=y #setting the green
         img4[y][x][2]=255-img4[y][x][1]
-imshow(img4)
+#imshow(img4)
+
+
+
+#PART2
+
+
+#Tresholding in greyscale 
+
+img5 = cv2.imread('mandrill.jpg')
+img6 = img5
+
+
+for x in range (len(img5)):
+    for y in range (len(img5[0])):
+        if np.all(img5[x][y] > 128):
+            img5[x][y] = np.array([225,225,225])
+        else:
+            img5[x][y] = np.array([0,0,0])
+cv2.imwrite("tresholding128.jpg",img5)
+imshow(img5)
+
+
+#Default Thresholding func
+
+print ((np.array(img6)).dtype)
+_,img7 = cv2.threshold(img6,10,255,cv2.THRESH_BINARY)
+imshow(img7)
+
+'''
+
+#Thresholding in colour (optional)
+
