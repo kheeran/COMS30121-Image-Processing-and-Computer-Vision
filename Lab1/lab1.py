@@ -8,7 +8,6 @@ def imshow(image):
     plt.imshow(imagergb)
     plt.show()
 
-'''
 
 #PART1
 
@@ -45,7 +44,7 @@ for y in range(len(img4)):
 #PART2
 
 
-#Tresholding in greyscale 
+#Tresholding in greyscale
 
 img5 = cv2.imread('mandrill.jpg')
 img6 = img5
@@ -67,7 +66,5 @@ print ((np.array(img6)).dtype)
 _,img7 = cv2.threshold(img6,10,255,cv2.THRESH_BINARY)
 imshow(img7)
 
-'''
 
 #Thresholding in colour (optional)
-
