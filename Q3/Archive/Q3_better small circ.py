@@ -18,7 +18,7 @@ for i in range (0,16):
     (M,N) = sobelx.shape
     grad = np.zeros((M,N))
     direc = np.zeros((M,N))
-    thresh = np.sum(img)/(N*M)
+    thresh = 2*np.sum(img)/(N*M)
 
     for m in range (0,M): #m = y
         for n in range  (0,N): # n = x
@@ -36,7 +36,6 @@ for i in range (0,16):
     cv2.imwrite(saveloc1,grad)
     print("image saved")
     # In[136]:
-
 
     #Hough Circle
 
