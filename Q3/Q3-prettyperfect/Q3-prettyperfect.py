@@ -19,7 +19,7 @@ for i in range (0,16):
     img = 2*np.array(cv2.cvtColor(imgcol, cv2.COLOR_BGR2GRAY))
 
     #implement own sobel operator***********************************
-    sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=3)
+    sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=3) # increase k to 5 for more dependent edge detection
     sobely = cv2.Sobel(img,cv2.CV_64F,0,1,ksize=3)
 
     (M,N) = sobelx.shape
@@ -52,16 +52,17 @@ for i in range (0,16):
     #assuming the full board has to be in the image and the board isn't distorted.
     maxrad = 100 #int(max(M,N)) #rad of largest circle
     nc =  maxrad #numcir
+    snc = 10
 
     stime = time.time()
     rad = np.zeros(nc)
-    for a in range (10,nc): # not zero to stop detection of tiny dots
-        rad[a] = (a+1)*maxrad/nc
+    for a in range (0,nc-snc): # not zero to stop detection of tiny dots
+        rad[a] = (a+snc+1)*maxrad/nc
 
     Hxyr = np.zeros ((M,N,nc))
     total= M*N
 
-
+    deg = math.pi/180
     for m in range (0,M): #y
         for n in range (0,N): #x
             if grad[m,n] == 255:
@@ -73,16 +74,16 @@ for i in range (0,16):
     #                 x1 = int(np.round(n - r*math.cos(direc[m,n])))
 
                     # to cater for noise we +/- 1 degree
-                    y1 = int(np.round(m + r*math.sin(direc[m,n]+math.pi/180)))
-                    x1 = int(np.round(n + r*math.cos(direc[m,n]+math.pi/180)))
-                    y2 = int(np.round(m + r*math.sin(direc[m,n]-math.pi/180)))
-                    x2 = int(np.round(n + r*math.cos(direc[m,n]-math.pi/180)))
+                    y1 = int(np.round(m + r*math.sin(direc[m,n]+deg)))
+                    x1 = int(np.round(n + r*math.cos(direc[m,n]+deg)))
+                    y2 = int(np.round(m + r*math.sin(direc[m,n]-deg)))
+                    x2 = int(np.round(n + r*math.cos(direc[m,n]-deg)))
 
                     #removing 2 if statements to speed up the loop
                     dx = 2*abs(x2-x1)
                     dy = 2*abs(y2-y1)
 
-                    radindex = int(nc*r/maxrad -1)
+                    radindex = int(nc*r/maxrad -(snc+1))
                     if dy<=y0<M-dy and dx<=x0<N-dx:
                         Hxyr[y0,x0,radindex] += 1
     #                 if 0<=y1<M and 0<=x1<N:
@@ -187,7 +188,7 @@ for i in range (0,16):
     amax = Hxyr[y0,x0].shape
     argordxyr = Hxyr[y0,x0].argsort(axis=None)
     rindex = argordxyr[amax[0]*1-1]
-    r = Hxyr[y0,x0,rindex]
+    r = (rindex+snc+1)*maxrad/nc
     cv2.circle(imgcol, (x0,y0), int(r), (0,255,0), 3, cv2.LINE_AA)
 
     index += 1
@@ -202,11 +203,11 @@ for i in range (0,16):
     amax = Hxyr[y1,x1].shape
     argordxyr = Hxyr[y1,x1].argsort(axis=None)
     rindex = argordxyr[amax[0]*1-1]
-    r = Hxyr[y1,x1,rindex]
+    r = (rindex+snc+1)*maxrad/nc
     cv2.circle(imgcol, (x1,y1), int(r), (0,0,255), 3, cv2.LINE_AA)
 
     for c in range(index, a*b):
-        (y,x)=np.unravel_index(argordH[a*b-c], (a,b)) #unravels the flattened value back into a tuple for the nth highest 
+        (y,x)=np.unravel_index(argordH[a*b-c], (a,b)) #unravels the flattened value back into a tuple for the nth highest
         if math.sqrt((x0-x)**2 + (y0-y)**2)>50 and math.sqrt((x1-x)**2 + (y1-y)**2)>50:
             index = c
             break
@@ -216,7 +217,7 @@ for i in range (0,16):
     amax = Hxyr[y2,x2].shape
     argordxyr = Hxyr[y2,x2].argsort(axis=None)
     rindex = argordxyr[amax[0]*1-1]
-    r = Hxyr[y2,x2,rindex]
+    r = (rindex+snc+1)*maxrad/nc
     cv2.circle(imgcol, (x2,y2), int(r), (255,0,0), 3, cv2.LINE_AA)
 
     saveloc2 = (str("circledetected/dart2circ" + str(i) + str(".jpg")))
