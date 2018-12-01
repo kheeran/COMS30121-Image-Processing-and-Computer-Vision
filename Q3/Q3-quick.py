@@ -11,7 +11,7 @@ import math
 import time
 
 start = time.time()
-for i in range (0,16):
+for i in range (0,1):
 
     # location = "../images/dart.bmp"
     location = str("../images/dart") + str(i) + str(".jpg")
@@ -39,7 +39,7 @@ for i in range (0,16):
                 grad[m,n] = 0
     # grad = cv2.Canny(img, thresh*0.5, thresh*2, 3 )
 
-    saveloc1 = (str("edgedetected/dartedge" + str(i) + str(".jpg")))
+    saveloc1 = (str("edgedetected/dart" + str(i) + "_edge" + str(".jpg")))
     cv2.imwrite(saveloc1,grad)
     # plt.imshow(grad, cmap='gray')
 
@@ -51,12 +51,12 @@ for i in range (0,16):
 
     #assuming the full board has to be in the image and the board isn't distorted.
     maxrad = 100 #int(max(M,N)) #rad of largest circle
-    snc = 20
+    snc = 10 # rad of smallest circle: not zero to stop detection of tiny dots
     nc =  maxrad #numcir
 
     stime = time.time()
     rad = np.zeros(nc-snc)
-    for a in range (0,nc-snc): # not zero to stop detection of tiny dots
+    for a in range (0,nc-snc):
         rad[a] = (a+snc+1)*maxrad/nc
 
     Hxyr = np.zeros ((M,N,nc))
@@ -70,45 +70,27 @@ for i in range (0,16):
 
                     # optimisation of the for loop to only cater for the top left quarter of a circle to its center
                     y0 = int(np.round(m + r*math.sin(direc[m,n])))
-    #                 y1 = int(np.round(m - r*math.sin(direc[m,n])))
                     x0 = int(np.round(n + r*math.cos(direc[m,n])))
-    #                 x1 = int(np.round(n - r*math.cos(direc[m,n])))
+
                     # to cater for noise we +/- 1 degree
-                    # y1 = int(np.round(m + r*math.sin(direc[m,n]+deg)))
-                    # x1 = int(np.round(n + r*math.cos(direc[m,n]+deg)))
-                    # y2 = int(np.round(m + r*math.sin(direc[m,n]-deg)))
-                    # x2 = int(np.round(n + r*math.cos(direc[m,n]-deg)))
+                    y1 = int(np.round(m + r*math.sin(direc[m,n]+deg)))
+                    x1 = int(np.round(n + r*math.cos(direc[m,n]+deg)))
+                    y2 = int(np.round(m + r*math.sin(direc[m,n]-deg)))
+                    x2 = int(np.round(n + r*math.cos(direc[m,n]-deg)))
 
-                    #removing 2 if statements to speed up the loop
-                    # dx = 2*abs(x2-x1)
-                    # dy = 2*abs(y2-y1)
-
+                    # removing 2 if statements to speed up the loop
+                    dx = 2*abs(x2-x1)
+                    dy = 2*abs(y2-y1)
                     radindex = int(nc*r/maxrad -(snc+1))
-                    if 0<=y0<M and 0<=x0<N:
+
+                    if dy<=y0<M-dy and dx<=x0<N-dx:
                         Hxyr[y0,x0,radindex] += 1
-    #                 if 0<=y1<M and 0<=x1<N:
-                        # Hxyr[y1,x1,radindex] += 1
-    #                 if 0<=y2<M and 0<=x2<N:
-                        # Hxyr[y2,x2,radindex] += 1
+                        Hxyr[y1,x1,radindex] += 1
+                        Hxyr[y2,x2,radindex] += 1
                     else:
                         break #break to prevent unecessary calculation wiht larger r values
 
-                    #case where all the points are in the grid
-    #                 if 0<=y0<M and 0<=x0<N and 0<=y1<M and 0<=x1<N:
-    #                     Hxyr[y0,x0,radindex] += 1
-    #                     Hxyr[y1,x0,radindex] += 1
-    #                     Hxyr[y0,x1,radindex] += 1
-    #                     Hxyr[y1,x1,radindex] += 1
-    #                 else:
-    #                     # other cases
-    #                     if 0<=y0<M and 0<=x0<N:
-    #                         Hxyr[y0,x0,radindex] += 1
-    #                     if 0<=y1<M and 0<=x1<N:
-    #                         Hxyr[y1,x1,radindex] += 1
-    #                     if 0<=y0<M and 0<=x1<N:
-    #                         Hxyr[y0,x1,radindex] += 1
-    #                     if 0<=y1<M and 0<=x0<N:
-    #                         Hxyr[y1,x0,radindex] += 1
+
     etime = time.time()
     print("runtime: Hough space " + str(etime-stime))
 
@@ -133,7 +115,7 @@ for i in range (0,16):
     etime = time.time()
     print ("runtime Hough space: " + str(etime-stime))
 
-    saveloc3 = (str("circledetected/dart2circ_HS" + str(i) + str(".jpg")))
+    saveloc3 = (str("circledetected/dart" + str(i) + "_HoughS" + str(".jpg")))
     cv2.imwrite(saveloc3,Hspace)
     # plt.imshow(Hspace, cmap='gray')
 
@@ -189,7 +171,7 @@ for i in range (0,16):
     r = (rindex+snc+1)*maxrad/nc
     cv2.circle(imgcol, (x2,y2), int(r), (255,0,0), 3, cv2.LINE_AA)
 
-    saveloc2 = (str("circledetected/dart2circ" + str(i) + str(".jpg")))
+    saveloc2 = (str("circledetected/dart" + str(i) +"_circ" + str(".jpg")))
     cv2.imwrite(saveloc2,imgcol)
     # imshow(imgcol)
     print (str(i+1) + " image(s) done")

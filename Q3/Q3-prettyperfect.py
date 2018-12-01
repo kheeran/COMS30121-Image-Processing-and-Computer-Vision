@@ -10,7 +10,7 @@ import cv2
 import math
 import time
 
-
+start = time.time()
 for i in range (0,16):
 
     # location = "../images/dart.bmp"
@@ -39,7 +39,7 @@ for i in range (0,16):
                 grad[m,n] = 0
     # grad = cv2.Canny(img, thresh*0.5, thresh*2, 3 )
 
-    saveloc1 = (str("edgedetected/dartedge" + str(i) + str(".jpg")))
+    saveloc1 = (str("edgedetected/dart" + str(i) + "_edge" + str(".jpg")))
     cv2.imwrite(saveloc1,grad)
     # plt.imshow(grad, cmap='gray')
 
@@ -163,9 +163,9 @@ for i in range (0,16):
     Hspace = Hspace*255/norm
     print (np.amax(Hspace))
     etime = time.time()
-    print ("runtime Hough space: " + str(etime-stime))
 
-    saveloc3 = (str("circledetected/dart2circ_HS" + str(i) + str(".jpg")))
+    print ("runtime Hough space: " + str(etim + e-stime)"
+    saveloc3 = (str("circledetected/dart + str(i) + "_HoughS" + str(".jpg")))
     cv2.imwrite(saveloc3,Hspace)
     # plt.imshow(Hspace, cmap='gray')
 
@@ -220,7 +220,8 @@ for i in range (0,16):
     r = (rindex+snc+1)*maxrad/nc
     cv2.circle(imgcol, (x2,y2), int(r), (255,0,0), 3, cv2.LINE_AA)
 
-    saveloc2 = (str("circledetected/dart2circ" + str(i) + str(".jpg")))
+    saveloc2 = (str("circledetected/dart" + str(i) + "_circ" + str(".jpg")))
     cv2.imwrite(saveloc2,imgcol)
     # imshow(imgcol)
     print (str(i+1) + " image(s) done")
+print ("Total runtime: " + str(time.time() - start))
