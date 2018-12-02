@@ -19,7 +19,7 @@ for i in range (0,16):
     imgcol = cv2.imread(location)
     img = cv2.cvtColor(imgcol, cv2.COLOR_BGR2GRAY)
 
-    faces = face_classifier.detectMultiScale(img, 1.1, 20, 0, (30,30), (200,200))
+    faces = face_classifier.detectMultiScale(img, 1.1, 1, 0, (30,30), (200,200))
 
 
     if faces is ():
@@ -28,7 +28,7 @@ for i in range (0,16):
 
     for (x,y,w,h) in faces:
         cv2.rectangle(imgcol, (x,y), (x+w,y+h), (0,255,0), 2)
-    imshow (imgcol)
+    # imshow (imgcol)
 
 
 
