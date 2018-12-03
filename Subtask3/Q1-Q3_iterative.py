@@ -180,7 +180,7 @@ def ViolaJones (i):
     image = cv2.imread(location)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     #run classifier
-    obj = obj_classifier.detectMultiScale(gray, 1.1, 10, 0, (20,20), (500,500))
+    obj = obj_classifier.detectMultiScale(gray, 1.1, 1, 0, (50,50), (500,500))
     return obj
 
 # Compare overlapping areas of 2 rectangles relative to A
