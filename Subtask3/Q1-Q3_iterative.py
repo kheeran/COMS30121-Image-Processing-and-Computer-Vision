@@ -106,7 +106,7 @@ def HSpace (Hxyr):
     return Hspace
 
 # Finding the rectangle enclosing the most likely 3 circles, not in close proximity to each other (50 pixels)
-def PlotCircle (imgcol, Hxyr, Hspace, minrad, maxrad):
+def PlotCircle (imgcol, Hxyr, Hspace, minrad, maxrad, prox=50):
 
     nc =  maxrad-minrad #num circles
     (a,b) = Hspace.shape #for later to calculate the highest index of the flattened array
@@ -133,7 +133,7 @@ def PlotCircle (imgcol, Hxyr, Hspace, minrad, maxrad):
     index += 1
     for c in range(index, a*b):
         (y,x)=np.unravel_index(argordH[a*b-c], (a,b)) #unravels the flattened value back into a tuple for the nth highest
-        if math.sqrt((x0-x)**2 + (y0-y)**2)>20:
+        if math.sqrt((x0-x)**2 + (y0-y)**2)>prox:
             index = c
             break
 
@@ -153,7 +153,7 @@ def PlotCircle (imgcol, Hxyr, Hspace, minrad, maxrad):
 #circle2
     for c in range(index, a*b):
         (y,x)=np.unravel_index(argordH[a*b-c], (a,b)) #unravels the flattened value back into a tuple for the nth highest
-        if math.sqrt((x0-x)**2 + (y0-y)**2)>20 and math.sqrt((x1-x)**2 + (y1-y)**2)>50:
+        if math.sqrt((x0-x)**2 + (y0-y)**2)>prox and math.sqrt((x1-x)**2 + (y1-y)**2)>prox:
             index = c
             break
 
@@ -262,6 +262,15 @@ def Eval (A,B,imgcol,thresh=0.5): #Geometric F1 Score
 
 ## PROGRAMME STARTS
 
+# Setting the thresholds
+edgethresh = 3
+judgethresh = 0.4
+# Setting the max and min radius of a detected circle in HT
+minrad = 10
+maxrad = 100
+# Set the min proximity of any 2 HT circles`
+proximity = 50
+
 start = time.time()
 for i in range (0,16):
 
@@ -272,17 +281,13 @@ for i in range (0,16):
 
     # Finding the edges of the image above a threshold
     stime = time.time()
-    grad, direc = EdgeDetect (img, threshavg=3)
+    grad, direc = EdgeDetect (img, threshavg=edgethresh)
     print ("EdgeDetect runtime: " + str(time.time() - stime) )
 
     # Saving the edge image
     saveloc = (str("detected/dart" + str(i) + str("edge.jpg")))
     cv2.imwrite(saveloc,grad)
     print ("Edge image saved")
-
-    # Setting the max and min radius of a detected circle in HT
-    minrad = 10
-    maxrad = 100
 
     #Running the Hough Transform for circles
     stime = time.time()
@@ -302,7 +307,7 @@ for i in range (0,16):
     print ("Hough image saved")
 
     # Finding the rectangle that encloses the 3 most likely circles
-    rect0, rect1, rect2 = PlotCircle(imgcol, Hxyr, Hspace, minrad, maxrad)
+    rect0, rect1, rect2 = PlotCircle(imgcol, Hxyr, Hspace, minrad, maxrad, prox=proximity)
     dart_HT = np.array([rect0,rect1,rect2])
 
     # Plotting the HT detection on the coloured image
@@ -331,7 +336,7 @@ for i in range (0,16):
     imgcol = cv2.imread(location)
 
     # Combining Viola-Jones and Hough Transform by finding the overlapping classifications and plotting the corresponding VJ rectangle
-    judge = Eval (dart_VJ,dart_HT, imgcol)
+    judge = Eval (dart_VJ,dart_HT, imgcol, thresh=judgethresh)
 
     # Saving the detection of combined VJ and HT
     saveloc = (str("detected/dart" + str(i) + str("HSVJ_detect.jpg")))
