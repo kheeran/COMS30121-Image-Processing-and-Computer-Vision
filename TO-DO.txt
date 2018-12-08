@@ -1,3 +1,15 @@
+Go through entire question paper and report to see if we have missed anything.
+
+Clean up working directory to have all defined functions in one file and just import the necessary functions for each qestion.
+
+have one py file for each question 
+
+do an extension, using anothe rmuch better and faster method for object detection. auto encoder maybe? 
+ 
+Code sobel operator 
+
+----
+
 Make 'Auto1' run through the entire course work from labeling the grond truth, to using Viola Jones to using VJ+HT and in the end creating a graph to compare the TP, FP FN and f1 scores of each method per image. 
 
 Make it as interactive as possible. 
@@ -5,3 +17,10 @@ Make it as interactive as possible.
 if multiple images, label all the ground truths initially and don't plot the images using if conditions
 
 if single image then plot the images of the itemediary stages using if conditions. a bool for multiple.
+
+----
+EXTENSION REF:
+
+http://mmlab.ie.cuhk.edu.hk/resources/deep_learning/overview.pdf
+
+https://towardsdatascience.com/object-detection-with-10-lines-of-code-d6cb4d86f606
