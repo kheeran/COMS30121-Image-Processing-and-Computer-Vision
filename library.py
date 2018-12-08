@@ -66,6 +66,7 @@ def ViolaJones (i, image, obj_classifier):
     obj = obj_classifier.detectMultiScale(gray, 1.1, 1, 0|cv2.CASCADE_SCALE_IMAGE, (50,50), (500,500))
     return obj
 
+
 # Compare overlapping areas of 2 rectangles relative to A
 def Compare (A,B):
     Area = np.zeros((len(A),len(B)))
@@ -131,6 +132,7 @@ def Eval (A,B,imgcol,thresh=0.5): #Geometric F1 Score
     judge = np.zeros((len(A),len(B)))
     Area = Compare (A,B)
     Areainv = Compare (B,A)
+    boxes = []
     for a in range (len(A)):
         for b in range (len(B)):
             p = Area[a,b]
@@ -139,10 +141,11 @@ def Eval (A,B,imgcol,thresh=0.5): #Geometric F1 Score
                 judge[a,b] = 0
             elif 2*p*r/(p+r)>thresh:
                 judge[a,b]= 1
+                boxes.append(A[a])
                 (x,y,w,h) = A[a]
                 cv2.rectangle(imgcol, (x,y) , (x+w,y+h),(0,255,0), 3)
 
-    return judge
+    return judge, boxes
 
 # get True positive, False Positive and False Negative from judgement
 def getinfo (judge, obj):
@@ -159,8 +162,6 @@ def getinfo (judge, obj):
             print ('error: missing condition')
     FP = len(obj) - TP
     detection = [TP, FP, FN]
-    print (judge)
-    print (detection)
     return detection
 
 # Calculate the F1-score from [TP, FP, FN]
@@ -179,8 +180,33 @@ def f1score(detection):
 def tpr(detection):
     tp = detection[0]
     fn = detection[2]
+    if tp == 0:
+        return 0
     recall = tp/(tp + fn)
     return recall
+
+def ppv(detection):
+    tp = detection[0]
+    fp = detection[1]
+    precision = tp/(tp + fp)
+    return precision
+
+def f1bar(result1, result2, whichimgs):
+    image_labels = []
+    for i in whichimgs:
+        each_image = 'dart'+str(i)+'jpg.'
+        image_labels.append(each_image)
+
+    indices = np.arange(len(image_labels))
+    width = 0.35
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    bar1 = ax.bar(indices, result1, width, color = 'royalblue', label = 'True Positive Rate')
+    bar2 = ax.bar(indices+width, result2, width, color = 'seagreen', label = 'F1-Score')
+    plt.xticks(indices+width/2, image_labels, rotation = 'vertical')
+    plt.legend(loc = 'lower left', bbox_to_anchor=(0,1.02,1,0.2), mode = 'expand', ncol = 2)
+    plt.show()
 
 # Detect edges using the sobel operator
 def EdgeDetect (img, threshavg=3):
@@ -341,3 +367,102 @@ def PlotRectangle (imgcol, Hxyr, Hspace, minrad, maxrad, prox=50):
 
 
     return circle0, circle1, circle2
+
+def Q3(whichdartimgs = [1], minrad=10, maxrad=100, proximity=50, edgethresh=3, judgethresh=0.5):
+    start = time.time()
+    for i in whichdartimgs:
+        # Loading a given image
+        location = str("./images/dart") + str(i) + str(".jpg")
+        imgcol = cv2.imread(location)
+        img = cv2.cvtColor(imgcol, cv2.COLOR_BGR2GRAY)
+        print ("dart" + str(i) + ".jpg loaded")
+        if len(whichdartimgs) == 1:
+            imshow(imgcol, "Original Image.")
+
+        # Finding the edges of the image above a threshold
+        stime = time.time()
+        grad, direc = EdgeDetect (img, threshavg=edgethresh)
+        print ("EdgeDetect runtime: " + str(time.time() - stime) )
+
+        # # Saving the edge image
+        # saveloc = (str("detected/dart" + str(i) + str("edge.jpg")))
+        # cv2.imwrite(saveloc,grad)
+        # print ("Edge image saved")
+
+        if len(whichdartimgs) == 1:
+            plt.title ("Edge image. Click to close")
+            plt.imshow (grad, cmap='gray')
+            plt.waitforbuttonpress()
+            plt.close()
+
+        #Running the Hough Transform for circles
+        stime = time.time()
+        Hxyr = HTCircle(grad, direc, minrad, maxrad)
+        etime = time.time()
+        print("runtime: Hough Transform " + str(etime-stime))
+
+
+        # Finding the Hough Space for the Hough Transform
+        stime = time.time()
+        Hspace = HSpace(Hxyr)
+        print ("Hough Space Runtime: " + str(time.time()-stime))
+
+        # #Saving the Hough Space image
+        # saveloc = (str("detected/dart" + str(i) + str("HS.jpg")))
+        # cv2.imwrite(saveloc,Hspace)
+        # print ("Hough image saved")
+        if len(whichdartimgs) == 1:
+            plt.title ("Hough Space. Click to close")
+            plt.imshow(Hspace, cmap='gray')
+            plt.waitforbuttonpress()
+            plt.close()
+
+        # Finding the rectangle that encloses the 3 most likely circles
+        rect0, rect1, rect2 = PlotRectangle(imgcol, Hxyr, Hspace, minrad, maxrad, prox=proximity)
+        dart_HT = np.array([rect0,rect1,rect2])
+
+        # Plotting the HT detection on the coloured image
+        for (x,y,w,h) in dart_HT:
+                cv2.rectangle(imgcol, (x,y), (x+w,y+h), (255,165,0), 3)
+
+        # Saving the HT detected colour image
+        # saveloc = (str("detected/dart" + str(i) + str("HS_detect.jpg")))
+        # cv2.imwrite(saveloc,imgcol)
+        # print ("Hough transform image saved")
+        if len(whichdartimgs) == 1:
+            imshow(imgcol, "Hough Transform detection.")
+
+        #Reloading a fresh coloured image
+        imgcol = cv2.imread(location)
+
+        # Finding abd labeling the detected dartboards for Viola-Jones
+        stime = time.time()
+        classifier = cv2.CascadeClassifier('./Subtask2/classifier/dartcascade/cascade.xml')
+        dart_VJ = ViolaJones(i, imgcol, classifier)
+        print ("Viola-Jones Runtime: " + str(time.time()-stime))
+        for (x,y,w,h) in dart_VJ:
+                cv2.rectangle(imgcol, (x,y), (x+w,y+h), (0,165,255), 3)
+
+        # # Saving VJ detected colour image
+        # saveloc = (str("detected/dart" + str(i) + str("VJ_detect.jpg")))
+        # cv2.imwrite(saveloc,imgcol)
+        # print ("Viola-Jones image saved")
+        if len(whichdartimgs) == 1:
+            imshow(imgcol, "Viola-Jones detection.")
+
+        # Reload the coloured image
+        imgcol = cv2.imread(location)
+
+        # Combining Viola-Jones and Hough Transform by finding the overlapping classifications and plotting the corresponding VJ rectangle
+        judgement, dart_VJHT = Eval (dart_VJ,dart_HT, imgcol, thresh=judgethresh)
+        # Note: the judgement array is unused
+
+        # Saving the detection of combined VJ and HT
+        # saveloc = (str("detected/dart" + str(i) + str("HSVJ_detect.jpg")))
+        # cv2.imwrite(saveloc,imgcol)
+        # print ("Joint HT & VJ image saved")
+        if len(whichdartimgs) == 1:
+            imshow(imgcol, "Joint HT & VJ detection.")
+        print ("dart" + str(i) + ".jpg done")
+    print ("Total runtime: " + str(time.time()-start))
+    return dart_VJHT
