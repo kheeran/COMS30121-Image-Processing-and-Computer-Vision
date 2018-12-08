@@ -97,13 +97,20 @@ def Eval (A,B,imgcol,thresh=0.4): #Geometric F1 Score
                 judge[a,b]= 1
     return judge
 
+## Programme Starts HERE
 
-for i in range (0,16):
+print ("Which images to load? (eg. 1 4 6 for images 1,4 and 6) ")
+whichimgs = [int(x) for x in input().split() if 0<=int(x)<16]
+print (whichimgs)
 
-    dart = 1 #bool(input("Detect faces(0) or dart(1)?"))
+for i in whichimgs:
+
+    dart = bool(input("Detect faces(0) or dart(1)? "))
+
 
     image = cv2.imread('./images/dart'+str(i)+ '.jpg')
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    print ("dart" + str(i) + ".jpg loaded")
 
     plt.imshow(img)
     plt.waitforbuttonpress()
@@ -223,6 +230,11 @@ for i in range (0,16):
         fn = detection[2]
         recall = tp/(tp + fn)
         return recall
+
+
+    VJgraph = [TP, FP, FN, f1score(detection)]
+
+
 
     print("True Positive Rate of dart" + str(i) + ": ", tpr(detection))
     print("F1-score of dart" + str(i) + ": ", f1score(detection))

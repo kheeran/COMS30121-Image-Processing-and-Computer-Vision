@@ -4,17 +4,19 @@ import numpy as np
 import cv2
 import math
 import time
-
 pylab.rcParams['figure.figsize'] = (20,10)
 
 ## FUNCTION DEFINITIONS
 
 # colour imshow since cv2 imshow doesnt work
-def imshow(image):
+def imshow(image, s=""):
     #OpenCV stores images in BGR so we have to convert to RGB to display it using matplotlib
     imagergb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    plt.title(s + " Click to close.", fontsize=14)
     plt.imshow(imagergb)
     plt.show()
+    # plt.waitforbuttonpress()
+    # plt.close()
 
 # Detect edges using the sobel operator
 def EdgeDetect (img, threshavg=3):
@@ -59,7 +61,10 @@ def HTCircle (grad, direc, minrad, maxrad):
     total= M*N
 
     deg = math.pi/180
+    print ("Performing Hough Troansform - Circles:")
     for m in range (0,M): #y
+        if m % np.round(M/30) == 0:
+            print (str(int(np.round(100*(m)/(M)))) + "%" )
         for n in range (0,N): #x
             if grad[m,n] == 255:
                 for r in rad:
@@ -106,7 +111,7 @@ def HSpace (Hxyr):
     return Hspace
 
 # Finding the rectangle enclosing the most likely 3 circles, not in close proximity to each other (50 pixels)
-def PlotCircle (imgcol, Hxyr, Hspace, minrad, maxrad, prox=50):
+def PlotRectangle (imgcol, Hxyr, Hspace, minrad, maxrad, prox=50):
 
     nc =  maxrad-minrad #num circles
     (a,b) = Hspace.shape #for later to calculate the highest index of the flattened array
@@ -243,6 +248,7 @@ def Compare (A,B):
     return Area
 
 # Determine if the overlap of 2 rectangles is large enough
+# using a geometric f1 score
 def Eval (A,B,imgcol,thresh=0.5): #Geometric F1 Score
     judge = np.zeros((len(A),len(B)))
     Area = Compare (A,B)
@@ -271,13 +277,19 @@ maxrad = 100
 # Set the min proximity of any 2 HT circles`
 proximity = 50
 
+# whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+whichdartimgs = [5,6,13]
+
+
 start = time.time()
-for i in range (0,16):
+for i in whichdartimgs:
 
     # Loading a given image
     location = str("../images/dart") + str(i) + str(".jpg")
     imgcol = cv2.imread(location)
     img = cv2.cvtColor(imgcol, cv2.COLOR_BGR2GRAY)
+    print ("dart" + str(i) + ".jpg loaded")
+    imshow(imgcol, "Original Image.")
 
     # Finding the edges of the image above a threshold
     stime = time.time()
@@ -288,6 +300,10 @@ for i in range (0,16):
     saveloc = (str("detected/dart" + str(i) + str("edge.jpg")))
     cv2.imwrite(saveloc,grad)
     print ("Edge image saved")
+    plt.title ("Edge image. Click to close")
+    plt.imshow (grad, cmap='gray')
+    plt.waitforbuttonpress()
+    plt.close()
 
     #Running the Hough Transform for circles
     stime = time.time()
@@ -305,42 +321,53 @@ for i in range (0,16):
     cv2.imwrite(saveloc,Hspace)
     print ("Hough Space Runtime: " + str(time.time()-stime))
     print ("Hough image saved")
+    plt.title ("Hough Space. Click to close")
+    plt.imshow(Hspace, cmap='gray')
+    plt.waitforbuttonpress()
+    plt.close()
 
     # Finding the rectangle that encloses the 3 most likely circles
-    rect0, rect1, rect2 = PlotCircle(imgcol, Hxyr, Hspace, minrad, maxrad, prox=proximity)
+    rect0, rect1, rect2 = PlotRectangle(imgcol, Hxyr, Hspace, minrad, maxrad, prox=proximity)
     dart_HT = np.array([rect0,rect1,rect2])
 
     # Plotting the HT detection on the coloured image
     for (x,y,w,h) in dart_HT:
             cv2.rectangle(imgcol, (x,y), (x+w,y+h), (255,165,0), 3)
 
-    # Saving the HT detection image
+    # Saving the HT detected colour image
     saveloc = (str("detected/dart" + str(i) + str("HS_detect.jpg")))
     cv2.imwrite(saveloc,imgcol)
     print ("Hough transform image saved")
+    imshow(imgcol, "Hough Transform detection.")
 
     #Reloading a fresh coloured image
     imgcol = cv2.imread(location)
 
-    # Finding the detected dartboards for Viola-Jones
+    # Finding abd labeling the detected dartboards for Viola-Jones
+    stime = time.time()
     dart_VJ = ViolaJones(i)
     for (x,y,w,h) in dart_VJ:
             cv2.rectangle(imgcol, (x,y), (x+w,y+h), (0,165,255), 3)
 
-    # Saving VJ detected image
+    # Saving VJ detected colour image
     saveloc = (str("detected/dart" + str(i) + str("VJ_detect.jpg")))
     cv2.imwrite(saveloc,imgcol)
+    print ("Viola-Jones Runtime: " + str(time.time()-stime))
     print ("Viola-Jones image saved")
+    imshow(imgcol, "Viola-Jones detection.")
 
     # Reload the coloured image
     imgcol = cv2.imread(location)
 
     # Combining Viola-Jones and Hough Transform by finding the overlapping classifications and plotting the corresponding VJ rectangle
-    judge = Eval (dart_VJ,dart_HT, imgcol, thresh=judgethresh)
+    judgement = Eval (dart_VJ,dart_HT, imgcol, thresh=judgethresh)
+    # Note: the judgement array is unused
 
     # Saving the detection of combined VJ and HT
     saveloc = (str("detected/dart" + str(i) + str("HSVJ_detect.jpg")))
     cv2.imwrite(saveloc,imgcol)
-    print ("Joing HT & VJ image saved")
+    print ("Joint HT & VJ image saved")
+    imshow(imgcol, "Joint HT & VJ detection.")
+
     print ("dart" + str(i) + ".jpg done")
 print ("Total runtime: " + str(time.time()-start))
