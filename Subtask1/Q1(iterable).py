@@ -19,18 +19,19 @@ for i in range (0,16):
     imgcol = cv2.imread(location)
     img = cv2.cvtColor(imgcol, cv2.COLOR_BGR2GRAY)
 
-    faces = face_classifier.detectMultiScale(img, 1.1, 1, 0, (30,30), (200,200))
+    faces = face_classifier.detectMultiScale(img, 1.1, 1, 0|cv2.CASCADE_SCALE_IMAGE, (50,50), (200,200))
 
 
     if faces is ():
-        print('No faces found')
+        print("dart" + str(i) + ".jpg: No faces found")
     # Draw box by iteration
 
     for (x,y,w,h) in faces:
         cv2.rectangle(imgcol, (x,y), (x+w,y+h), (0,255,0), 2)
     # imshow (imgcol)
 
-
+    saveloc = (str("faceclassified/dart" + str(i) + str("_VJface.jpg")))
+    cv2.imwrite(saveloc,imgcol)
 
     sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=3)
     sobely = cv2.Sobel(img,cv2.CV_64F,0,1,ksize=3)
@@ -59,5 +60,4 @@ for i in range (0,16):
 
     saveloc = (str("nofaceedge/dartnofaceedge" + str(i) + str(".jpg")))
     cv2.imwrite(saveloc,grad)
-    plt.imshow(grad, cmap='gray')
     print (str(i+1) + "image(s) done")

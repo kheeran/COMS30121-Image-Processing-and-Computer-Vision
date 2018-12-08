@@ -103,10 +103,9 @@ print ("Which images to load? (eg. 1 4 6 for images 1,4 and 6) ")
 whichimgs = [int(x) for x in input().split() if 0<=int(x)<16]
 print (whichimgs)
 
+dart = bool(input("Detect faces(0) or dart(1)? "))
+
 for i in whichimgs:
-
-    dart = bool(input("Detect faces(0) or dart(1)? "))
-
 
     image = cv2.imread('./images/dart'+str(i)+ '.jpg')
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -129,7 +128,7 @@ for i in whichimgs:
         plt.waitforbuttonpress()
 
         while True:
-
+            img2 = np.copy(img)
             pts = []
             while len(pts) < 2:
                 drawshow('For each object, draw the boundary by selecting 2 opposite corners with your right click, then press enter.')
@@ -148,10 +147,10 @@ for i in whichimgs:
 
             if plt.waitforbuttonpress(timeout=-1):
                 break
+            img = img2
+            plt.close()
+            plt.imshow(img)
 
-            image = cv2.imread('./images/dart'+str(i)+ '.jpg')
-            # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         print(pts)
     plt.close()
@@ -164,7 +163,9 @@ for i in whichimgs:
         ground[k] = (store[k][0][0], store[k][0][1], s[0],s[1])
         (x,y,w,h) = ground[k]
         cv2.rectangle(image, (x,y), (x+w,y+h), (128,0,128),3)
+    plt.imshow(img)
 
+    print ("DONE")
 
     # ### b) Automated TPR and F1-score calculation
     # Using the co-ordinated of the ground truths previously annotated, we run the Viola-Jones face detector and calculate the true positive rate (TPR) and the F1- score of the classification.
