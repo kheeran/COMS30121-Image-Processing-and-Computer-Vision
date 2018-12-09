@@ -23,16 +23,16 @@ np.array([[117, 106, 134, 113],[981, 101, 128, 113]]), 15:
 np.array([[151,  56, 136, 131]])}
 
 # Setting the thresholds
-edgethresh = 3
-judgethresh = 0.4
+edgethresh = 2.3
+judgethresh = 0.5
 # Setting the max and min radius of a detected circle in HT
 minrad = 10
 maxrad = 100
 # Set the min proximity of any 2 HT circles`
-proximity = 50
+proximity = 70
 
 # whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-whichdartimgs = [9]
+whichdartimgs = [14]
 
 F1VJ = []
 F1VJHT = []
@@ -144,4 +144,8 @@ for i in whichdartimgs:
     F1VJ.append(lib.f1score(detectionVJ))
     print ("dart" + str(i) + ".jpg done")
 print ("Total runtime: " + str(time.time()-start))
+print ("F1-VJ:")
+print (F1VJ)
+print ("F1-VJHT:")
+print (F1VJHT)
 lib.f1bar(F1VJ, F1VJHT, whichdartimgs)
