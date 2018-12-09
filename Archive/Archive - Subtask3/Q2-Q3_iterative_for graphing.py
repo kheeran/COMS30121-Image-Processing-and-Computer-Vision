@@ -32,11 +32,14 @@ maxrad = 100
 proximity = 70
 
 whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-# whichdartimgs = [9]
+# whichdartimgs = [9,10]
 
-F1VJ = []
-F1VJHT = []
-
+F1VJ = {}
+F1VJHT = {}
+PrecisionVJ = {}
+PrecisionVJHT = {}
+RecallVJ = {}
+RecallVJHT = {}
 start = time.time()
 for i in whichdartimgs:
 
@@ -140,12 +143,61 @@ for i in whichdartimgs:
     judgementVJ, _ = lib.Eval(ground[i], dart_VJ,imgcol, thresh=judgethresh)
     detectionVJHT = lib.getinfo(judgementVJHT,dart_VJHT)
     detectionVJ = lib.getinfo(judgementVJ,dart_VJ)
-    F1VJHT.append(lib.f1score(detectionVJHT))
-    F1VJ.append(lib.f1score(detectionVJ))
+    F1VJHT[i] = lib.f1score(detectionVJHT)
+    F1VJ[i] = lib.f1score(detectionVJ)
+    PrecisionVJ[i] = lib.ppv(detectionVJ)
+    PrecisionVJHT[i] = lib.ppv(detectionVJHT)
+    RecallVJ[i] = lib.tpr(detectionVJ)
+    RecallVJHT[i] = lib.tpr(detectionVJHT)
     print ("dart" + str(i) + ".jpg done")
 print ("Total runtime: " + str(time.time()-start))
 print ("F1-VJ:")
 print (F1VJ)
 print ("F1-VJHT:")
 print (F1VJHT)
-lib.f1bar(F1VJ, F1VJHT, whichdartimgs)
+print ("Precision-VJ:")
+print (PrecisionVJ)
+print ("Precision-VJHT:")
+print (PrecisionVJHT)
+print ("RecallVJ: ")
+print (RecallVJ)
+print ("RecallVJHT: ")
+print (RecallVJHT)
+
+def f1bar(result1, result2, whichimgs, s):
+    image_labels = []
+    for i in whichimgs:
+        if i == 20:
+            each_image = 'average'
+        else:
+            each_image = 'dart'+str(i)+'jpg.'
+        image_labels.append(each_image)
+
+    indices = np.arange(len(image_labels))
+    width = 0.35
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    bar1 = ax.bar(indices, result1, width, color = 'royalblue', label = 'Viola-Jones')
+    bar2 = ax.bar(indices+width, result2, width, color = 'seagreen', label = 'Viola-Jones + Hough Transform')
+    plt.xticks(indices+width/2, image_labels, rotation = 'vertical')
+    plt.ylabel(s, fontsize=14)
+    plt.legend(loc = 'lower left', bbox_to_anchor=(0,1.02,1,0.2), mode = 'expand', ncol = 2)
+    plt.show()
+
+
+
+avgVJ_P = sum(PrecisionVJ.values())/len(PrecisionVJ)
+print(PrecisionVJ)
+print (sum(PrecisionVJ.values()))
+print (len(PrecisionVJ))
+avgVJHT_P = sum(PrecisionVJHT.values())/len(PrecisionVJHT)
+ResultVJ_P = [PrecisionVJ[5], PrecisionVJ[9], avgVJ_P]
+ResultVJHT_P = [PrecisionVJHT[5], PrecisionVJHT[9], avgVJHT_P]
+f1bar(ResultVJ_P, ResultVJHT_P, [5,9,20], "precision")
+
+avgVJ_R = sum(RecallVJ.values())/len(RecallVJ)
+avgVJHT_R = sum(RecallVJHT.values())/len(RecallVJHT)
+ResultVJ_R = [RecallVJ[5], RecallVJ[9], avgVJ_R]
+ResultVJHT_R = [RecallVJHT[5], RecallVJHT[9], avgVJHT_R]
+f1bar(ResultVJ_R, ResultVJHT_R, [5,9,20],"recall")

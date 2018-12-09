@@ -180,7 +180,9 @@ def f1score(detection):
 def tpr(detection):
     tp = detection[0]
     fn = detection[2]
-    if tp == 0:
+    if tp+fn == 0:
+        return 1.0
+    elif tp == 0:
         return 0
     recall = tp/(tp + fn)
     return recall
@@ -189,7 +191,9 @@ def tpr(detection):
 def ppv(detection):
     tp = detection[0]
     fp = detection[1]
-    if tp==0:
+    if tp+fp==0:
+        return 1.0
+    elif tp ==0:
         return 0
     precision = tp/(tp + fp)
     return precision

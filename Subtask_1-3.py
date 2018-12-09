@@ -20,13 +20,11 @@ if len(whichimgs) == 1:
 
 dart = bool(int(input("Detect faces(0) or dart(1)? ")))
 print (dart)
-if dart:
-    annotations = bool(input("Load annotations? (0 for no, 1 for yes)"))
-else:
-    annotations = False
 
+annotations = bool(input("Load annotations? (0 for no, 1 for yes) "))
+print (annotations)
 
-if annotations:
+if dart and annotations:
     ground = {0: np.array([[435,   6, 167, 194]]), 1: np.array([[198, 143, 191, 173]]), 2:
     np.array([[ 97, 101,  98,  80]]), 3: np.array([[322, 150,  69,  69]]), 4:
     np.array([[175, 104, 172, 180]]), 5: np.array([[426, 141,  92,  97]]), 6:
@@ -38,6 +36,21 @@ if annotations:
     np.array([[269, 126, 135, 130]]), 14:
     np.array([[117, 106, 134, 113],[981, 101, 128, 113]]), 15:
     np.array([[151,  56, 136, 131]])}
+elif annotations:
+    ground = {0: np.array([[185, 193,  79,  91]]), 1: np.array([]), 2: np.array([]), 3: np.array([]), 4: np.array([[345, 110, 120, 144]]), 5: np.array([[ 66, 143,  49,  56],
+       [ 55, 251,  64,  62],
+       [196, 221,  56,  63],
+       [251, 166,  51,  66],
+       [295, 242,  53,  60],
+       [383, 177,  56,  70],
+       [430, 242,  53,  60],
+       [514, 183,  57,  55],
+       [562, 253,  49,  60],
+       [648, 187,  53,  60],
+       [676, 253,  55,  56]]), 6: np.array([[287, 116,  36,  40]]), 7: np.array([[346, 198,  73,  80]]), 8: np.array([]), 9: np.array([[ 88, 215, 102, 115]]), 10: np.array([]), 11: np.array([[329,  81,  51,  63]]), 12: np.array([]), 13: np.array([[423, 134,  89, 116]]), 14: np.array([[473, 222,  74,  99],
+       [729, 195, 104,  94]]), 15: np.array([[ 68, 126,  59,  81],
+       [374, 108,  48,  86],
+       [535, 119,  65,  95]])}
 else:
     ground = {}
 f1 = {}
@@ -113,10 +126,10 @@ for i in whichimgs:
     print("F1-score of dart" + str(i) + ": ", f1[i])
 
 plt.close()
-resultf1 = []
+resultf1_VJ = []
 resulttpr = []
 for i in whichimgs:
-    resultf1.append(f1[i])
+    resultf1_VJ.append(f1[i])
     resulttpr.append(tpr[i])
 
 if not dart:
@@ -124,13 +137,13 @@ if not dart:
 ## Starting Q3
 
 # Setting the thresholds
-edgethresh = 3
-judgethresh = 0.4
+edgethresh = 2.2
+judgethresh = 0.5
 # Setting the max and min radius of a detected circle in HT
 minrad = 10
 maxrad = 100
 # Set the min proximity of any 2 HT circles`
-proximity = 50
+proximity = 70
 
 #Performing Hough Transform with circles on the images
 dart_VJHT = lib.Q3(whichimgs, minrad,maxrad,proximity,edgethresh,judgethresh)
@@ -160,6 +173,6 @@ for i in whichimgs:
     resulttpr.append(tpr[i])
 
 # Plot a bar chart comparing f1 scores of VJ with and without Hough Transform
-lib.f1bar(resulttpr, resultf1, whichimgs)
+lib.f1bar(resultf1_VJ, resultf1, whichimgs)
 plt.waitforbuttonpress()
 plt.close()

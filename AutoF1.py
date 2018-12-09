@@ -196,8 +196,8 @@ for i in whichimgs:
         cv2.rectangle(image, (x,y), (x+w,y+h), (0,255,0), 3)
 
     imshow(image)
-    saveloc = (str("dart" + str(i) + str("classified.jpg")))
-    cv2.imwrite(saveloc,image)
+    # saveloc = (str("dart" + str(i) + str("classified.jpg")))
+    # cv2.imwrite(saveloc,image)
 
     # Use the evaluator to determine if a classification is a true positive or a false positive.
     judge = Eval(ground, obj, image, thresh=0.5)
