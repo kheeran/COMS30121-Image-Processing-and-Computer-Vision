@@ -1,0 +1,1 @@
+The limitation of this detection is that the same dartboard is classified multiple times as viola-jones has a high false positive rate. This mean that the harmonic mean between the Hough Transform classifier and multiple violajones classifiers are above the threshold.

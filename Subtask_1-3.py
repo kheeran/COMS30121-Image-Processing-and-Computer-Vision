@@ -18,9 +18,13 @@ show = False
 if len(whichimgs) == 1:
     show = True
 
-annotations = bool(input("Load annotations? (0 for no, 1 for yes)"))
+dart = bool(int(input("Detect faces(0) or dart(1)? ")))
+print (dart)
+if dart:
+    annotations = bool(input("Load annotations? (0 for no, 1 for yes)"))
+else:
+    annotations = False
 
-dart = bool(input("Detect faces(0) or dart(1)? "))
 
 if annotations:
     ground = {0: np.array([[435,   6, 167, 194]]), 1: np.array([[198, 143, 191, 173]]), 2:
@@ -43,7 +47,8 @@ tpr = {}
 if not show and not annotations:
     for i in whichimgs:
         # Load dart(i).jpg and visually imspect the image
-        image = cv2.imread('./images/dart'+str(i)+ '.jpg')
+        location = './images/dart'+str(i)+ '.jpg'
+        image = cv2.imread(location)
         img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         print ("dart" + str(i) + ".jpg loaded")
         if dart:
@@ -60,7 +65,8 @@ if not show and not annotations:
 
 for i in whichimgs:
     # Load dart(i).jpg and visually imspect the image
-    image = cv2.imread('./images/dart'+str(i)+ '.jpg')
+    location = './images/dart'+str(i)+ '.jpg'
+    image = cv2.imread(location)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     print ("dart" + str(i) + ".jpg loaded")
     if dart:
@@ -113,10 +119,8 @@ for i in whichimgs:
     resultf1.append(f1[i])
     resulttpr.append(tpr[i])
 
-lib.f1bar(resulttpr, resultf1, whichimgs)
-
-
-'''
+if not dart:
+    quit() # Since Q3 works only for dart boards.
 ## Starting Q3
 
 # Setting the thresholds
@@ -128,25 +132,34 @@ maxrad = 100
 # Set the min proximity of any 2 HT circles`
 proximity = 50
 
+#Performing Hough Transform with circles on the images
 dart_VJHT = lib.Q3(whichimgs, minrad,maxrad,proximity,edgethresh,judgethresh)
 
 for i in whichimgs:
-    image = cv2.imread('./images/dart'+str(i)+ '.jpg')
+    # Storing f1-scores to plot in a bar chart
+    image = cv2.imread(location)
     judgement, _ = lib.Eval(ground[i], dart_VJHT, image, thresh=0.5 )
     detection = lib.getinfo(judgement, dart_VJHT)
     f1[i] = lib.f1score(detection)
+
+    image = cv2.imread(location)
+    judgement, _ = lib.Eval(ground[i], obj, image, thresh=0.5 )
+    detection = lib.getinfo(judgement, obj)
     tpr[i] = lib.tpr(detection)
-    print("True Positive Rate of dart" + str(i) + ": ", tpr[i])
-    print("F1-score of dart" + str(i) + ": ", f1[i])
+    #not actually tpr, but F1-score for VJ
+    print("VJ F1-score of dart" + str(i) + ": ", tpr[i])
+    print("VJHT F1-score of dart" + str(i) + ": ", f1[i])
 
 plt.close()
+
 resultf1 = []
 resulttpr = []
+#Putting reslts in appropriate format for the function
 for i in whichimgs:
     resultf1.append(f1[i])
     resulttpr.append(tpr[i])
 
+# Plot a bar chart comparing f1 scores of VJ with and without Hough Transform
 lib.f1bar(resulttpr, resultf1, whichimgs)
 plt.waitforbuttonpress()
 plt.close()
-'''
