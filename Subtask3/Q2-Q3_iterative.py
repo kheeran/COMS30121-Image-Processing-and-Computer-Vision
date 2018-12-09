@@ -23,7 +23,7 @@ np.array([[117, 106, 134, 113],[981, 101, 128, 113]]), 15:
 np.array([[151,  56, 136, 131]])}
 
 # Setting the thresholds
-edgethresh = 2.3
+edgethresh = 2.2
 judgethresh = 0.5
 # Setting the max and min radius of a detected circle in HT
 minrad = 10
@@ -31,8 +31,8 @@ maxrad = 100
 # Set the min proximity of any 2 HT circles`
 proximity = 70
 
-# whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-whichdartimgs = [14]
+whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+# whichdartimgs = [9]
 
 F1VJ = []
 F1VJHT = []
