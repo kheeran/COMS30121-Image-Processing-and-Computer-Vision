@@ -7,6 +7,66 @@ import time
 import libraryQ4 as lib
 pylab.rcParams['figure.figsize'] = (20,10)
 
+def PlotRectangle (imgcol, Hxyr, Hspace, minrad, maxrad, prox=50):
+    nc =  maxrad-minrad #num circles
+    (a,b) = Hspace.shape #for later to calculate the highest index of the flattened array
+    argordH = Hspace.argsort(axis=None) #lists the indices in accending order of value (array is flattened)
+
+    index = 1
+    #in order to detect images with multiple dart boards, we find the top highest Hspace values that dont have
+
+#circle0
+    (y0,x0)=np.unravel_index(argordH[a*b-index], (a,b)) #unravels the flattened value back into a tuple for the nth highest
+    amax = Hxyr[y0,x0].shape
+    argordxyr = Hxyr[y0,x0].argsort(axis=None)
+    print (argordxyr)
+    rindex = argordxyr[amax[0]*1-1]
+    r = (rindex+minrad+1)*maxrad/nc
+
+    argordmax = []
+    for rr in range (1,10):
+        rindex = argordxyr[amax[0]*1-rr]
+        argordmax.append(int((rindex+minrad+1)*maxrad/nc))
+    circle0 = (x0,y0,r)
+    # circle0 = (x0-int(r),y0-int(r),int(2*r),int(2*r))
+
+    index += 1
+    for c in range(index, a*b):
+        (y,x)=np.unravel_index(argordH[a*b-c], (a,b)) #unravels the flattened value back into a tuple for the nth highest
+        if math.sqrt((x0-x)**2 + (y0-y)**2)>prox:
+            index = c
+            break
+
+    (y1,x1)=np.unravel_index(argordH[a*b-index], (a,b)) #unravels the flattened value back into a tuple for the nth highest
+    amax = Hxyr[y1,x1].shape
+    argordxyr = Hxyr[y1,x1].argsort(axis=None)
+    print (argordxyr)
+    rindex = argordxyr[amax[0]*1-1]
+    r = (rindex+minrad+1)*maxrad/nc
+
+    circle1 = (x1,y1,r)
+    # circle1 = (x1-int(r),y1-int(r),int(2*r),int(2*r))
+
+#circle2
+    for c in range(index, a*b):
+        (y,x)=np.unravel_index(argordH[a*b-c], (a,b)) #unravels the flattened value back into a tuple for the nth highest
+        if math.sqrt((x0-x)**2 + (y0-y)**2)>prox and math.sqrt((x1-x)**2 + (y1-y)**2)>prox:
+            index = c
+            break
+
+    (y2,x2)=np.unravel_index(argordH[a*b-index], (a,b)) #unravels the flattened value back into a tuple for the nth highest
+    amax = Hxyr[y2,x2].shape
+    argordxyr = Hxyr[y2,x2].argsort(axis=None)
+    print (argordxyr)
+    rindex = argordxyr[amax[0]*1-1]
+    r = (rindex+minrad+1)*maxrad/nc
+
+    circle2 = (x2,y2,r)
+    # circle2 = (x2-int(r),y2-int(r),int(2*r),int(2*r))
+
+    return circle0, circle1, circle2
+
+
 ## PROGRAMME STARTS
 
 # Pre-annotated ground truths
@@ -31,8 +91,8 @@ maxrad = 100
 # Set the min proximity of any 2 HT circles`
 proximity = 70
 
-whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-# whichdartimgs = [9]
+# whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+whichdartimgs = [9]
 
 F1VJ = {}
 F1VJHT = {}
@@ -59,7 +119,7 @@ for i in whichdartimgs:
     print ("EdgeDetect runtime: " + str(time.time() - stime) )
 
     # Saving the edge image
-    saveloc = (str("detected/dart" + str(i) + str("edge.jpg")))
+    saveloc = (str("detectedtest/dart" + str(i) + str("edge.jpg")))
     cv2.imwrite(saveloc,grad)
     print ("Edge image saved")
     if len(whichdartimgs) == 1:
@@ -68,19 +128,42 @@ for i in whichdartimgs:
         plt.waitforbuttonpress()
         plt.close()
 
+    # Finding abd labeling the detected dartboards for Viola-Jones
+    stime = time.time()
+    classifier = cv2.CascadeClassifier('cascade.xml')
+    dart_VJ = lib.ViolaJones(i, imgcol, classifier)
+    newgrad = np.zeros(grad.shape)
+    for (x,y,w,h) in dart_VJ:
+            for xx in range (x,x+w):
+                for yy in range (y, y+h):
+                    newgrad[yy,xx] = grad[yy,xx]
+            cv2.rectangle(imgcol, (x,y), (x+w,y+h), (0,165,255), 3)
+    plt.imshow(newgrad, cmap='gray')
+    grad = newgrad
+    plt.waitforbuttonpress()
+    # Saving VJ detected colour image
+    saveloc = (str("detectedtest/dart" + str(i) + str("VJ_detect.jpg")))
+    cv2.imwrite(saveloc,imgcol)
+    print ("Viola-Jones Runtime: " + str(time.time()-stime))
+    print ("Viola-Jones image saved")
+    if len(whichdartimgs) == 1:
+        lib.imshow(imgcol, "Viola-Jones detection.")
+
+    #Reloading a fresh coloured image
+    imgcol = cv2.imread(location)
+
     #Running the Hough Transform for circles
     stime = time.time()
     Hxyr = lib.HTCircle(grad, direc, minrad, maxrad)
     etime = time.time()
     print("runtime: Hough Transform " + str(etime-stime))
 
-
     # Finding the Hough Space for the Hough Transform
     stime = time.time()
     Hspace = lib.HSpace(Hxyr)
 
     #Saving the Hough Space image
-    saveloc = (str("detected/dart" + str(i) + str("HS.jpg")))
+    saveloc = (str("detectedtest/dart" + str(i) + str("HS.jpg")))
     cv2.imwrite(saveloc,Hspace)
     print ("Hough Space Runtime: " + str(time.time()-stime))
     print ("Hough image saved")
@@ -91,7 +174,7 @@ for i in whichdartimgs:
         plt.close()
 
     # Finding the rectangle that encloses the 3 most likely circles
-    rect0, rect1, rect2 = lib.PlotRectangle(imgcol, Hxyr, Hspace, minrad, maxrad, prox=proximity)
+    rect0, rect1, rect2 = PlotRectangle(imgcol, Hxyr, Hspace, minrad, maxrad, prox=proximity)
     dart_HT = np.array([rect0,rect1,rect2])
 
     # Plotting the HT detection on the coloured image
@@ -99,29 +182,12 @@ for i in whichdartimgs:
             cv2.rectangle(imgcol, (x,y), (x+w,y+h), (255,165,0), 3)
 
     # Saving the HT detected colour image
-    saveloc = (str("detected/dart" + str(i) + str("HS_detect.jpg")))
+    saveloc = (str("detectedtest/dart" + str(i) + str("HS_detect.jpg")))
     cv2.imwrite(saveloc,imgcol)
     print ("Hough transform image saved")
     if len(whichdartimgs) == 1:
         lib.imshow(imgcol, "Hough Transform detection.")
 
-    #Reloading a fresh coloured image
-    imgcol = cv2.imread(location)
-
-    # Finding abd labeling the detected dartboards for Viola-Jones
-    stime = time.time()
-    classifier = cv2.CascadeClassifier('cascade.xml')
-    dart_VJ = lib.ViolaJones(i, imgcol, classifier)
-    for (x,y,w,h) in dart_VJ:
-            cv2.rectangle(imgcol, (x,y), (x+w,y+h), (0,165,255), 3)
-
-    # Saving VJ detected colour image
-    saveloc = (str("detected/dart" + str(i) + str("VJ_detect.jpg")))
-    cv2.imwrite(saveloc,imgcol)
-    print ("Viola-Jones Runtime: " + str(time.time()-stime))
-    print ("Viola-Jones image saved")
-    if len(whichdartimgs) == 1:
-        lib.imshow(imgcol, "Viola-Jones detection.")
 
     # Reload the coloured image
     imgcol = cv2.imread(location)
@@ -131,7 +197,7 @@ for i in whichdartimgs:
     # Note: the judgement array is unused
 
     # Saving the detection of combined VJ and HT
-    saveloc = (str("detected/dart" + str(i) + str("VJHS_detect.jpg")))
+    saveloc = (str("detectedtest/dart" + str(i) + str("VJHS_detect.jpg")))
     cv2.imwrite(saveloc,imgcol)
     print ("Joint HT & VJ image saved")
     if len(whichdartimgs) == 1:
