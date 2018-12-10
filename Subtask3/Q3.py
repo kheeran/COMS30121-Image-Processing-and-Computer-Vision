@@ -168,7 +168,7 @@ print ("VJ - Mean F1: " + str(avgVJ_F1))
 
 avgVJHT_R = sum(RecallVJHT.values())/len(RecallVJHT)
 avgVJHT_P = sum(PrecisionVJHT.values())/len(PrecisionVJHT)
-avgVJ_F1 = 2*avgVJHT_R*avgVJHT_P/(avgVJHT_P + avgVJHT_R)
+avgVJHT_F1 = 2*avgVJHT_R*avgVJHT_P/(avgVJHT_P + avgVJHT_R)
 print ("VJHT - Mean F1: " + str(avgVJHT_F1))
 
 lib.f1bar(F1VJ, F1VJHT, whichdartimgs)

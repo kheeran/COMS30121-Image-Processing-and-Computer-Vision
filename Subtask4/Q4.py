@@ -4,11 +4,7 @@ import numpy as np
 import cv2
 import math
 import time
-import os,sys,inspect
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
-import library as lib
+import libraryQ4 as lib
 pylab.rcParams['figure.figsize'] = (20,10)
 
 ## PROGRAMME STARTS
@@ -27,16 +23,16 @@ np.array([[117, 106, 134, 113],[981, 101, 128, 113]]), 15:
 np.array([[151,  56, 136, 131]])}
 
 # Setting the thresholds
-edgethresh = 2.2
-judgethresh = 0.5
+edgethresh = 2
+judgethresh = 0.4
 # Setting the max and min radius of a detected circle in HT
 minrad = 10
 maxrad = 100
 # Set the min proximity of any 2 HT circles`
 proximity = 70
 
-whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-# whichdartimgs = [9]
+# whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+whichdartimgs = [9]
 
 F1VJ = {}
 F1VJHT = {}
@@ -168,7 +164,7 @@ print ("VJ - Mean F1: " + str(avgVJ_F1))
 
 avgVJHT_R = sum(RecallVJHT.values())/len(RecallVJHT)
 avgVJHT_P = sum(PrecisionVJHT.values())/len(PrecisionVJHT)
-avgVJ_F1 = 2*avgVJHT_R*avgVJHT_P/(avgVJHT_P + avgVJHT_R)
+avgVJHT_F1 = 2*avgVJHT_R*avgVJHT_P/(avgVJHT_P + avgVJHT_R)
 print ("VJHT - Mean F1: " + str(avgVJHT_F1))
 
-lib.f1bar(F1VJ, F1VJHT, whichdartimgs)
+lib.f1bar(F1VJ.values(), F1VJHT.values(), whichdartimgs)
