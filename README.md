@@ -11,4 +11,8 @@
 ------------------------------------------------------------------------
 ### Subtask 4: Improving your Detector
 #### we have edited the library slightly for this stage and so made a new one called libraryQ4.py which Q4.py loads from. Q4 runs iteratively through all images, it's very similar to Q3, just with different parameters.
+#### We have also included our code for running SSD in SSD.py courtesy of superdatascience online deep learning course.
 ------------------------------------------------------------------------
+### LOADING IMAGES:
+#### For iterative testing, place all test images in a folder and load that path directory when prompted. 
+#### For single testing, same as above, however you will need to specify the image name when prompted.

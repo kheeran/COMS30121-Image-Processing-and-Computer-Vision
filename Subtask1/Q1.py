@@ -3,6 +3,12 @@ import cv2
 import matplotlib.pyplot as plt
 import math
 import matplotlib.pylab as pylab
+from os import listdir
+from os.path import isfile, join
+
+mypath = str(input("Enter folder path (eg.'../images/'): "))
+
+onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
 pylab.rcParams['figure.figsize'] = (20,10)
 
@@ -12,17 +18,27 @@ def imshow(image):
     imagergb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     plt.imshow(imagergb)
 
+def imresize (image):
+    hh, ww, dd = image.shape
+    imscale = 500/ww
+    newX, newY = image.shape[1]*imscale, image.shape[0]*imscale
+    newimage = cv2.resize(image, (int(newX), int(newY)))
+    return newimage
+
 obj_classifier = cv2.CascadeClassifier('frontalface.xml')
 
 fig = plt.figure()
 
 #number of test images
-N=16
+N=len(onlyfiles)
 
 for i in range (0,N):
     #load image
-    location = str("../images/dart") + str(i) + str(".jpg")
+    location = mypath + onlyfiles[i]
+
     image = cv2.imread(location)
+    image = imresize(image)
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     #run classifier
@@ -36,7 +52,7 @@ for i in range (0,N):
     for (x,y,w,h) in obj:
         cv2.rectangle(image, (x,y), (x+w,y+h), (0,255,0), 3)
 
-    saveloc = (str("faceclassified/dartclass" + str(i) + str(".jpg")))
+    saveloc = (str("faceclassified/") + onlyfiles[i])
     cv2.imwrite(saveloc,image)
 #     plot figures
     cols = 4
@@ -44,3 +60,6 @@ for i in range (0,N):
     ax = fig.add_subplot(rows, cols, i+1)
     imagergb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     ax.imshow(imagergb)
+# imshow(image)
+#cv2.imwrite('detected.jpg', detected)
+#cv2.destroyAllWindows()

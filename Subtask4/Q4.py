@@ -5,6 +5,20 @@ import cv2
 import math
 import time
 import libraryQ4 as lib
+import os,sys,inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+import library as lib
+from os import listdir
+from os.path import isfile, join
+
+
+mypath = "../images/"
+# mypath = str(input("Enter folder path (eg.'../images/'): "))
+
+onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+
 pylab.rcParams['figure.figsize'] = (20,10)
 
 ## PROGRAMME STARTS
@@ -31,8 +45,11 @@ maxrad = 100
 # Set the min proximity of any 2 HT circles`
 proximity = 70
 
-whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+# whichdartimgs = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
 # whichdartimgs = [9]
+whichdartimgs = []
+for a in range (len(onlyfiles)) :
+    whichdartimgs.append(a)
 
 F1VJ = {}
 F1VJHT = {}
@@ -45,10 +62,11 @@ start = time.time()
 for i in whichdartimgs:
 
     # Loading a given image
-    location = str("../images/dart") + str(i) + str(".jpg")
+    location = mypath + onlyfiles[i]
     imgcol = cv2.imread(location)
+    imgcol = lib.imresize(imgcol)
     img = cv2.cvtColor(imgcol, cv2.COLOR_BGR2GRAY)
-    print ("dart" + str(i) + ".jpg loaded")
+    print (onlyfiles[i] + " loaded")
     if len(whichdartimgs) == 1:
         lib.imshow(imgcol, "Original Image.")
 
@@ -59,7 +77,9 @@ for i in whichdartimgs:
     print ("EdgeDetect runtime: " + str(time.time() - stime) )
 
     # Saving the edge image
-    saveloc = (str("detected/dart" + str(i) + str("edge.jpg")))
+    # saveloc = (str("detected/dart" + str(i) + str("edge.jpg")))
+    saveloc = str("detected/edge_") + onlyfiles[i]
+
     cv2.imwrite(saveloc,grad)
     print ("Edge image saved")
     if len(whichdartimgs) == 1:
@@ -80,7 +100,9 @@ for i in whichdartimgs:
     Hspace = lib.HSpace(Hxyr)
 
     #Saving the Hough Space image
-    saveloc = (str("detected/dart" + str(i) + str("HS.jpg")))
+    # saveloc = (str("detected/dart" + str(i) + str("HS.jpg")))
+    saveloc = str("detected/HS_") + onlyfiles[i]
+
     cv2.imwrite(saveloc,Hspace)
     print ("Hough Space Runtime: " + str(time.time()-stime))
     print ("Hough image saved")
@@ -99,7 +121,9 @@ for i in whichdartimgs:
             cv2.rectangle(imgcol, (x,y), (x+w,y+h), (255,165,0), 3)
 
     # Saving the HT detected colour image
-    saveloc = (str("detected/dart" + str(i) + str("HS_detect.jpg")))
+    # saveloc = (str("detected/dart" + str(i) + str("HS_detect.jpg")))
+    saveloc = str("detected/HT_") + onlyfiles[i]
+
     cv2.imwrite(saveloc,imgcol)
     print ("Hough transform image saved")
     if len(whichdartimgs) == 1:
@@ -107,6 +131,8 @@ for i in whichdartimgs:
 
     #Reloading a fresh coloured image
     imgcol = cv2.imread(location)
+    imgcol = lib.imresize(imgcol)
+
 
     # Finding abd labeling the detected dartboards for Viola-Jones
     stime = time.time()
@@ -116,7 +142,9 @@ for i in whichdartimgs:
             cv2.rectangle(imgcol, (x,y), (x+w,y+h), (0,165,255), 3)
 
     # Saving VJ detected colour image
-    saveloc = (str("detected/dart" + str(i) + str("VJ_detect.jpg")))
+    # saveloc = (str("detected/dart" + str(i) + str("VJ_detect.jpg")))
+    saveloc = str("detected/VJ_") + onlyfiles[i]
+
     cv2.imwrite(saveloc,imgcol)
     print ("Viola-Jones Runtime: " + str(time.time()-stime))
     print ("Viola-Jones image saved")
@@ -125,13 +153,17 @@ for i in whichdartimgs:
 
     # Reload the coloured image
     imgcol = cv2.imread(location)
+    imgcol = lib.imresize(imgcol)
+
 
     # Combining Viola-Jones and Hough Transform by finding the overlapping classifications and plotting the corresponding VJ rectangle
     _, dart_VJHT = lib.Eval(dart_VJ,dart_HT, imgcol, thresh=judgethresh)
     # Note: the judgement array is unused
 
     # Saving the detection of combined VJ and HT
-    saveloc = (str("detected/dart" + str(i) + str("VJHS_detect.jpg")))
+    # saveloc = (str("detected/dart" + str(i) + str("VJHS_detect.jpg")))
+    saveloc = str("detected/VJHT_") + onlyfiles[i]
+
     cv2.imwrite(saveloc,imgcol)
     print ("Joint HT & VJ image saved")
     if len(whichdartimgs) == 1:
@@ -139,6 +171,7 @@ for i in whichdartimgs:
 
     # Reload the coloured image
     imgcol = cv2.imread(location)
+    imgcol = lib.imresize(imgcol)
     judgementVJHT, _ =lib.Eval(ground[i], dart_VJHT, imgcol, thresh=judgethresh)
     imgcol = cv2.imread(location)
     judgementVJ, _ = lib.Eval(ground[i], dart_VJ,imgcol, thresh=judgethresh)
@@ -150,7 +183,7 @@ for i in whichdartimgs:
     PrecisionVJHT[i] = lib.ppv(detectionVJHT)
     RecallVJ[i] = lib.tpr(detectionVJ)
     RecallVJHT[i] = lib.tpr(detectionVJHT)
-    print ("dart" + str(i) + ".jpg done")
+    print (onlyfiles[i] + " done")
 print ("Total runtime: " + str(time.time()-start))
 print ("F1-VJ:")
 print (F1VJ)

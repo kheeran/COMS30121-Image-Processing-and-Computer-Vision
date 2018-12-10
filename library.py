@@ -16,6 +16,15 @@ def imshow(image, s=""):
     plt.waitforbuttonpress()
     plt.close()
 
+def imresize (image):
+    hh, ww, dd = image.shape
+    if ww < 1000:
+        return image
+    imscale = 500/ww
+    newX, newY = image.shape[1]*imscale, image.shape[0]*imscale
+    newimage = cv2.resize(image, (int(newX), int(newY)))
+    return newimage
+
 def drawshow(s):
     plt.title(s, fontsize=11)
     plt.draw()
