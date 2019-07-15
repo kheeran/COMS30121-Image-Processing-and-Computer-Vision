@@ -18,6 +18,7 @@ mypath = "../images/"
 # mypath = str(input("Enter folder path (eg.'../images/'): "))
 
 onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+onlyfiles = sorted(onlyfiles)
 
 pylab.rcParams['figure.figsize'] = (20,10)
 

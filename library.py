@@ -244,6 +244,8 @@ def EdgeDetect (img, threshavg=3):
             if sobelx[m,n] == 0: # to prevent division by zero in direc
                 sobelx[m,n]= 1*10**(-5)
             direc[m,n] = np.arctan(sobely[m,n]/sobelx[m,n])
+            if direc[m,n] < 0:
+                    direc[m,n] += 2*math.pi
             if grad[m,n]>thresh:
                 grad[m,n] = 255
             else:
