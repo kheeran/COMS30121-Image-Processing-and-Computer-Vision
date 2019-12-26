@@ -1,4 +1,6 @@
 # IPCV Coursework: The Dartboard Challenge
+Details of the work done for this project is detailed in **COMS30121_Report.pdf** and below is a summary of the code structure
+
 -----------------------------------------------------------------------
 ### Subtask 1: The Viola-Jones Object Detector
 #### Both the Jupyter Notebook and the python file contain the same code, however, the Jupyter Notebook has some minor annotations.
