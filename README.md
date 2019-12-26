@@ -1,5 +1,5 @@
 # IPCV Coursework: The Dartboard Challenge
-Details of the work done for this project is detailed in **COMS30121_Report.pdf** and below is a summary of the code structure
+Details of the work done for this project is detailed in **COMS30121_Report.pdf** and below is a summary of the code structure where all functions used are in library.py
 
 -----------------------------------------------------------------------
 ### Subtask 1: The Viola-Jones Object Detector
